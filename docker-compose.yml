@@ -1,5 +1,6 @@
 version: '3'
 services:
+
   bcb:
     image: "public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix"
     ports:
@@ -8,3 +9,15 @@ services:
     image: "public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp"
     ports:
       - 9091:9091
+
+  postgres:
+    container_name: postgres
+    image: 'postgres:alpine'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db
+      POSTGRES_HOST: postgres
+
