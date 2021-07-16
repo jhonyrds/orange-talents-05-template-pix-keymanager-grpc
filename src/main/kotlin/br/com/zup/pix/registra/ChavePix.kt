@@ -23,14 +23,14 @@ class ChavePix(
     @Enumerated(EnumType.STRING)
     val tipoDeConta: TipoDeConta,
 
-    @field: ManyToOne(cascade = [CascadeType.ALL])
+    @Embedded
     val conta: ContaAssociada
 ) {
     @Id
     @GeneratedValue
     val id: UUID? = null
 
-    val criadaEm : LocalDateTime = LocalDateTime.now()
+    val criadaEm: LocalDateTime = LocalDateTime.now()
 
     override fun toString(): String {
         return "ChavePix(clientId=$clientId, tipoDeChave=$tipo, chave='$chave', tipoDeConta=$tipoDeConta, conta=$conta, id=$id, criadaEm=$criadaEm)"

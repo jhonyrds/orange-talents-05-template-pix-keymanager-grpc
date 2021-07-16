@@ -22,8 +22,8 @@ class NovaChavePixService(
             throw IllegalArgumentException("Chave pix: ${novaChave.chave} existente")
         }
 
-        val response = itauClient.buscaContaPorTipo(novaChave.clientId!!, novaChave.tipo!!.name)
-        val conta = response.body().toModel() ?: throw IllegalStateException("Cliente não encontrado")
+        val response = itauClient.buscaContaPorTipo(novaChave.clientId!!, novaChave.tipoDeConta!!.name)
+        val conta = response.body()?.toModel() ?: throw IllegalStateException("Cliente não encontrado")
 
         val chave = novaChave.toModel(conta)
         repository.save(chave)

@@ -1,18 +1,30 @@
 package br.com.zup.pix.util
 
 import br.com.zup.pix.registra.NovaChavePix
+import br.com.zup.pix.registra.TipoDeChave
+import io.micronaut.core.annotation.AnnotationValue
+import io.micronaut.validation.validator.constraints.ConstraintValidator
+import io.micronaut.validation.validator.constraints.ConstraintValidatorContext
 import javax.inject.Singleton
-import javax.validation.ConstraintValidator
-import javax.validation.ConstraintValidatorContext
 
 @Singleton
-class ValidPixKeyValidador:ConstraintValidator<ValidPixKey, NovaChavePix> {
+class ValidPixKeyValidador: ConstraintValidator<ValidPixKey,NovaChavePix>{
 
-    override fun isValid(value: NovaChavePix?, context: ConstraintValidatorContext?): Boolean {
-        if (value?.tipo == null){
+
+    override fun isValid(
+        value: NovaChavePix,
+        annotationMetadata: AnnotationValue<ValidPixKey>,
+        context: ConstraintValidatorContext
+    ): Boolean {
+
+        if(value.tipo == null) {
             return false
         }
-        return value.tipo.valida(value.chave!!)
-    }
 
+
+        if(value.tipo == TipoDeChave.ALEATORIA) return true
+
+
+        return value.tipo.validaChave(value.chave!!)
+    }
 }

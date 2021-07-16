@@ -9,6 +9,6 @@ import io.micronaut.http.client.annotation.Client
 @Client("\${itau.contas.url}")
 interface ContasDeClientsNoItauClient {
 
-    @Get("api/v1/clientes/{clienteId}/contas{?tipo}")
+    @Get("/api/v1/clientes/{clienteId}/contas{?tipo}")
     fun buscaContaPorTipo(@PathVariable clienteId: String, @QueryValue tipo: String):HttpResponse<DadosDaContaResponse>
 }

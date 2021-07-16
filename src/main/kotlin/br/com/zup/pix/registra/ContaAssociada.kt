@@ -1,13 +1,10 @@
 package br.com.zup.pix.registra
 
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import javax.persistence.Embeddable
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.Size
 
-@Entity
+@Embeddable
 class ContaAssociada(
 
     @field:NotBlank
@@ -28,7 +25,5 @@ class ContaAssociada(
     @field:Size(max = 6)
     val numeroDaConta: String
 ) {
-    @field:Id
-    @field:GeneratedValue(strategy = GenerationType.IDENTITY)
-    val idConta: Long? = null
+
 }

@@ -3,11 +3,29 @@ package br.com.zup.pix.registra
 import org.hibernate.validator.internal.constraintvalidators.hv.EmailValidator
 import org.hibernate.validator.internal.constraintvalidators.hv.br.CPFValidator
 
-
 enum class TipoDeChave {
 
+    EMAIL {
+        override fun validaChave(chave: String): Boolean {
+            if (chave.isNullOrBlank()) {
+                return false
+            }
+            return EmailValidator().run {
+                initialize(null)
+                isValid(chave, null)
+            }
+        }
+    },
+    CELULAR {
+        override fun validaChave(chave: String): Boolean {
+            if (chave.isNullOrBlank()) {
+                return false
+            }
+            return chave.matches("^[0-9]{11}\$".toRegex())
+        }
+    },
     CPF {
-        override fun valida(chave: String): Boolean {
+        override fun validaChave(chave: String): Boolean {
             if (chave.isNullOrBlank()) {
                 return false
             }
@@ -22,29 +40,11 @@ enum class TipoDeChave {
             }
         }
     },
-
-    CELULAR {
-        override fun valida(chave: String): Boolean {
-            if (chave.isNullOrBlank()) {
-                return false
-            }
-            return chave.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
-        }
-    },
-    EMAIL {
-        override fun valida(chave: String): Boolean {
-            if (chave.isNullOrBlank()) {
-                return false
-            }
-            return EmailValidator().run {
-                initialize(null)
-                isValid(chave, null)
-            }
-        }
-    },
     ALEATORIA {
-        override fun valida(chave: String) = chave.isNullOrBlank()
+        override fun validaChave(chave: String): Boolean {
+            return true
+        }
     };
 
-    abstract fun valida(chave: String): Boolean
+    abstract fun validaChave(chave: String): Boolean
 }
