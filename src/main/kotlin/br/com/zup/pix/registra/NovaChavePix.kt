@@ -1,5 +1,7 @@
 package br.com.zup.pix.registra
 
+import br.com.zup.pix.modelo.ChavePix
+import br.com.zup.pix.modelo.ContaAssociada
 import br.com.zup.pix.util.ValidPixKey
 import br.com.zup.pix.util.ValidUUID
 import io.micronaut.core.annotation.Introspected

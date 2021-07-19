@@ -1,6 +1,6 @@
 package br.com.zup.pix.servicosExternos
 
-import br.com.zup.pix.registra.ContaAssociada
+import br.com.zup.pix.modelo.ContaAssociada
 
 data class DadosDaContaResponse(
     val tipo: String,

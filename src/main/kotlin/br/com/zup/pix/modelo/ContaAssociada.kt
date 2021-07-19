@@ -1,4 +1,4 @@
-package br.com.zup.pix.registra
+package br.com.zup.pix.modelo
 
 import javax.persistence.Embeddable
 import javax.validation.constraints.NotBlank

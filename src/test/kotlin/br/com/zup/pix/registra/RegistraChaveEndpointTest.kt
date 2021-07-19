@@ -5,8 +5,11 @@ import br.com.zup.PixKeymanagerGrpcServiceGrpc
 import br.com.zup.RegistraChavePixRequest
 import br.com.zup.TipoDeChave
 import br.com.zup.TipoDeConta
+import br.com.zup.pix.modelo.ChavePix
+import br.com.zup.pix.modelo.ContaAssociada
 import br.com.zup.pix.registra.TipoDeChave.CPF
 import br.com.zup.pix.registra.TipoDeConta.CONTA_CORRENTE
+import br.com.zup.pix.repository.ChavePixRepository
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException

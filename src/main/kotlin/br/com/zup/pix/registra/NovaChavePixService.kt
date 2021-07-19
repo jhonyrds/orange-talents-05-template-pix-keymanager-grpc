@@ -1,6 +1,8 @@
 package br.com.zup.pix.registra
 
 import br.com.zup.pix.exception.ChavePixExistenteException
+import br.com.zup.pix.modelo.ChavePix
+import br.com.zup.pix.repository.ChavePixRepository
 import br.com.zup.pix.servicosExternos.ContasDeClientsNoItauClient
 import io.micronaut.validation.Validated
 import org.slf4j.Logger

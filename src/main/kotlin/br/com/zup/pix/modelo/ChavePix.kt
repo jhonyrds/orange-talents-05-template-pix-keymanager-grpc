@@ -1,6 +1,8 @@
-package br.com.zup.pix.registra
+package br.com.zup.pix.modelo
 
 
+import br.com.zup.pix.registra.TipoDeChave
+import br.com.zup.pix.registra.TipoDeConta
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.*
