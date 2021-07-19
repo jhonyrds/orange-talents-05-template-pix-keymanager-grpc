@@ -5,6 +5,6 @@ import io.micronaut.data.repository.CrudRepository
 import java.util.*
 
 @Repository
-interface ChavePixRepository:CrudRepository<ChavePix, UUID> {
+interface ChavePixRepository : CrudRepository<ChavePix, UUID> {
     fun existsByChave(chave: String): Boolean
 }

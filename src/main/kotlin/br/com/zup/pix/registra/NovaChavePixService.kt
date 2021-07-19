@@ -1,5 +1,6 @@
 package br.com.zup.pix.registra
 
+import br.com.zup.pix.exception.ChavePixExistenteException
 import br.com.zup.pix.servicosExternos.ContasDeClientsNoItauClient
 import io.micronaut.validation.Validated
 import org.slf4j.Logger
@@ -19,7 +20,7 @@ class NovaChavePixService(
     fun registra(@Valid novaChave: NovaChavePix): ChavePix {
 
         if (repository.existsByChave(novaChave.chave!!)) {
-            throw IllegalArgumentException("Chave pix: ${novaChave.chave} existente")
+            throw ChavePixExistenteException("Chave pix: ${novaChave.chave} existente")
         }
 
         val response = itauClient.buscaContaPorTipo(novaChave.clientId!!, novaChave.tipoDeConta!!.name)
