@@ -63,7 +63,7 @@ class DeletaChaveEndpoint(@Inject val repository: ChavePixRepository) :
         }
 
         responseObserver?.onNext(DeletaChaveResponse.newBuilder()
-            .setPixId(pixId.get().chave)
+            .setPixId(pixId.get().id.toString())
             .build())
         responseObserver?.onCompleted()
 
