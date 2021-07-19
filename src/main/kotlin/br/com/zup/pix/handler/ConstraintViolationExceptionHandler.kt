@@ -17,7 +17,7 @@ class ConstraintViolationExceptionHandler : ExceptionHandler<ConstraintViolation
         val details = BadRequest.newBuilder()
             .addAllFieldViolations(e.constraintViolations.map {
                 BadRequest.FieldViolation.newBuilder()
-                    .setField(it.propertyPath.last().name ?: "?? key ??")
+                    .setField(it.propertyPath.last().name ?: "?? chave ??")
                     .setDescription(it.message)
                     .build()
             })
