@@ -4,9 +4,9 @@ import br.com.zup.DeletaChaveRequest
 import br.com.zup.PixDeletaServiceGrpc
 import br.com.zup.pix.modelo.ChavePix
 import br.com.zup.pix.modelo.ContaAssociada
-import br.com.zup.pix.registra.TipoDeChave
-import br.com.zup.pix.registra.TipoDeConta
+import br.com.zup.pix.registra.*
 import br.com.zup.pix.repository.ChavePixRepository
+import br.com.zup.pix.servicosExternos.BancoCentralDoBrasilClient
 import io.grpc.ManagedChannel
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -25,10 +25,11 @@ import javax.inject.Singleton
 @MicronautTest(transactional = false)
 internal class DeletaChaveEndpointTest(
     private val repository: ChavePixRepository,
+    private val bcbClient: BancoCentralDoBrasilClient,
     private val grpcClient: PixDeletaServiceGrpc.PixDeletaServiceBlockingStub
 ) {
     @BeforeEach
-    fun setup(){
+    fun setup() {
         repository.deleteAll()
     }
 
@@ -55,15 +56,36 @@ internal class DeletaChaveEndpointTest(
         )
         repository.save(cadastro)
 
-        val response = grpcClient.deleta(DeletaChaveRequest.newBuilder()
-            .setPixId(cadastro.id.toString())
-            .setClienteId(cadastro.clienteId.toString())
-            .build())
+        val request = CriaChaveChavePixRequest(
+            keyType = PixKeyType.by(cadastro.tipo),
+            key = cadastro.chave,
+            bankAccount = BankAccount(
+                participant = ContaAssociada.ITAU_UNIBANCO_ISPB,
+                branch = contaAssociada.agencia,
+                accountNumber = contaAssociada.numeroDaConta,
+                accountType = AccountType.by(cadastro.tipoDeConta),
+            ),
+            owner = Owner(
+                type = Owner.OwnerType.NATURAL_PERSON,
+                name = contaAssociada.nomeDoTitular,
+                taxIdNumber = contaAssociada.cpfDoTitular
+            )
+        )
+
+        bcbClient.cadastra(request)
+
+        val response = grpcClient.deleta(
+            DeletaChaveRequest.newBuilder()
+                .setPixId(cadastro.id.toString())
+                .setClienteId(cadastro.clienteId.toString())
+                .build()
+        )
 
 
         //validação
         with(response) {
             assertNotNull(pixId)
+            assertNotNull(clienteId)
             assertEquals(0, repository.count())
         }
 
@@ -105,13 +127,13 @@ internal class DeletaChaveEndpointTest(
 
         //validação
         with(error) {
-            assertEquals(Status.NOT_FOUND.code, status.code)
-            assertEquals("Cliente não cadastrado", status.description)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertEquals("Chave pix não encontrada ou não pertence ao cliente", status.description)
         }
     }
 
     @Test
-    fun `deve retornar status not_found quando a chave nao for encontrada`() {
+    fun `deve retornar status invalid_argument quando a chave nao for encontrada`() {
         //cenário
 
         //ação
@@ -143,13 +165,13 @@ internal class DeletaChaveEndpointTest(
 
         //validação
         with(error) {
-            assertEquals(Status.NOT_FOUND.code, status.code)
-            assertEquals("Chave não encontrada", status.description)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertEquals("Chave pix não encontrada ou não pertence ao cliente", status.description)
         }
     }
 
     @Test
-    internal fun `deve retornar status not_found quando usuario tentar excluir chave de terceiro`() {
+    internal fun `deve retornar status invalid_argument quando usuario tentar excluir chave de terceiro`() {
 
         //cenário
 
@@ -200,8 +222,8 @@ internal class DeletaChaveEndpointTest(
 
         //validação
         with(error) {
-            assertEquals(Status.NOT_FOUND.code, status.code)
-            assertEquals("Chave informada não pertence a sua conta", status.description)
+            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertEquals("Chave pix não encontrada ou não pertence ao cliente", status.description)
         }
     }
 
