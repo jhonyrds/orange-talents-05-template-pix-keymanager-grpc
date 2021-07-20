@@ -117,7 +117,7 @@ internal class RegistraChaveEndpointTest(
         )
 
         val existente = ChavePix(
-            clientId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
             tipo = CPF,
             chave = "02467781054",
             tipoDeConta = CONTA_CORRENTE,

@@ -47,7 +47,7 @@ internal class DeletaChaveEndpointTest(
         )
 
         val cadastro = ChavePix(
-            clientId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
             tipo = TipoDeChave.CPF,
             chave = "02467781054",
             tipoDeConta = TipoDeConta.CONTA_CORRENTE,
@@ -57,7 +57,7 @@ internal class DeletaChaveEndpointTest(
 
         val response = grpcClient.deleta(DeletaChaveRequest.newBuilder()
             .setPixId(cadastro.id.toString())
-            .setClienteId(cadastro.clientId.toString())
+            .setClienteId(cadastro.clienteId.toString())
             .build())
 
 
@@ -85,7 +85,7 @@ internal class DeletaChaveEndpointTest(
         )
 
         val cadastro = ChavePix(
-            clientId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
             tipo = TipoDeChave.ALEATORIA,
             chave = UUID.randomUUID().toString(),
             tipoDeConta = TipoDeConta.CONTA_CORRENTE,
@@ -124,7 +124,7 @@ internal class DeletaChaveEndpointTest(
         )
 
         val cadastro = ChavePix(
-            clientId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
             tipo = TipoDeChave.CPF,
             chave = "02467781054",
             tipoDeConta = TipoDeConta.CONTA_CORRENTE,
@@ -136,7 +136,7 @@ internal class DeletaChaveEndpointTest(
             grpcClient.deleta(
                 DeletaChaveRequest.newBuilder()
                     .setPixId("dcb51af9-5677-4a3a-a1aa-f87b48e30582")
-                    .setClienteId(cadastro.clientId.toString())
+                    .setClienteId(cadastro.clienteId.toString())
                     .build()
             )
         }
@@ -172,7 +172,7 @@ internal class DeletaChaveEndpointTest(
         )
 
         val usuario1 = ChavePix(
-            clientId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
+            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
             tipo = TipoDeChave.CELULAR,
             chave = "11123456789",
             tipoDeConta = TipoDeConta.CONTA_CORRENTE,
@@ -181,7 +181,7 @@ internal class DeletaChaveEndpointTest(
         repository.save(usuario1)
 
         val usuario2 = ChavePix(
-            clientId = UUID.fromString("5260263c-a3c1-4727-ae32-3bdb2538841b"),
+            clienteId = UUID.fromString("5260263c-a3c1-4727-ae32-3bdb2538841b"),
             tipo = TipoDeChave.EMAIL,
             chave = "email@teste.com.br",
             tipoDeConta = TipoDeConta.CONTA_CORRENTE,
@@ -193,7 +193,7 @@ internal class DeletaChaveEndpointTest(
             grpcClient.deleta(
                 DeletaChaveRequest.newBuilder()
                     .setPixId(usuario1.id.toString())
-                    .setClienteId(usuario2.clientId.toString())
+                    .setClienteId(usuario2.clienteId.toString())
                     .build()
             )
         }

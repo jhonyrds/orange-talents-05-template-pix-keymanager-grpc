@@ -21,7 +21,7 @@ enum class TipoDeChave {
             if (chave.isNullOrBlank()) {
                 return false
             }
-            return chave.matches("^[0-9]{11}\$".toRegex())
+            return chave.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
         }
     },
     CPF {
@@ -41,9 +41,7 @@ enum class TipoDeChave {
         }
     },
     ALEATORIA {
-        override fun validaChave(chave: String): Boolean {
-            return true
-        }
+        override fun validaChave(chave: String) = chave.isNullOrBlank()
     };
 
     abstract fun validaChave(chave: String): Boolean

@@ -42,10 +42,11 @@ message RegistraChavePixResponse {
 }
 
 message DeletaChaveRequest{
-string pixId = 1;
-string clienteId = 2;
+  string pixId = 1;
+  string clienteId = 2;
 }
 
 message DeletaChaveResponse{
-  string pixId = 1;
+  string clienteId = 1;
+  string pixId = 2;
 }
