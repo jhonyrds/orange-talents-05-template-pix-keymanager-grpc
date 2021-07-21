@@ -38,6 +38,8 @@ class ChavePix(
         return "ChavePix(clientId=$clienteId, tipoDeChave=$tipo, chave='$chave', tipoDeConta=$tipoDeConta, conta=$conta, id=$id, criadaEm=$criadaEm)"
     }
 
+    fun pertenceAo(clienteId: UUID) = this.clienteId.equals(clienteId)
+
     fun isAleatoria(): Boolean{
         return tipo == TipoDeChave.ALEATORIA
     }

@@ -2,6 +2,7 @@ package br.com.zup.pix.servicosExternos
 
 import br.com.zup.pix.deleta.DeletaChavePixRequest
 import br.com.zup.pix.deleta.DeletaChavePixResponse
+import br.com.zup.pix.registra.ChavePixDetalhesResponse
 import br.com.zup.pix.registra.CriaChaveChavePixRequest
 import br.com.zup.pix.registra.CriaChavePixResponse
 import io.micronaut.http.HttpResponse
@@ -25,4 +26,10 @@ interface BancoCentralDoBrasilClient {
         consumes = [MediaType.APPLICATION_XML]
     )
     fun deleta(@PathVariable key: String, @Body request: DeletaChavePixRequest) : HttpResponse<DeletaChavePixResponse>
+
+    @Get("/api/v1/pix/keys/{key}",
+        produces = [MediaType.APPLICATION_XML],
+        consumes = [MediaType.APPLICATION_XML]
+    )
+    fun consultaPorChave(@PathVariable key: String): HttpResponse<ChavePixDetalhesResponse>
 }
