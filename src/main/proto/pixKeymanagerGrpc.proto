@@ -17,8 +17,12 @@ service PixDeletaService {
   rpc deleta (DeletaChaveRequest) returns (DeletaChaveResponse){}
 }
 
-service PixConsultaChaveService{
+service PixConsultaChaveService {
   rpc consulta (ConsultaChaveRequest) returns (ConsultaChaveResponse){}
+}
+
+service PixListaChavesService {
+  rpc lista (ListaChavesRequest) returns (ListaChavesResponse){}
 }
 
 enum TipoDeChave {
@@ -92,4 +96,20 @@ message ConsultaChaveResponse{
   string pixId = 2;
   ChavePix chave = 3;
 
+}
+
+message ListaChavesRequest{
+  string clienteId = 1;
+}
+
+message ListaChavesResponse{
+  message ChavePix{
+    string pixId = 1;
+    TipoDeChave tipo = 2;
+    string chave = 3;
+    TipoDeConta tipoDeConta = 4;
+    google.protobuf.Timestamp criadaEm = 5;
+  }
+  string clienteId = 1;
+  repeated ChavePix chaves= 2;
 }
