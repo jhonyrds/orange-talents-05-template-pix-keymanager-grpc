@@ -4,7 +4,9 @@ import br.com.zup.DeletaChaveRequest
 import br.com.zup.PixDeletaServiceGrpc
 import br.com.zup.pix.modelo.ChavePix
 import br.com.zup.pix.modelo.ContaAssociada
-import br.com.zup.pix.registra.*
+import br.com.zup.pix.registra.TipoDeChave
+import br.com.zup.pix.registra.TipoDeConta
+import br.com.zup.pix.registra.TipoDeConta.CONTA_CORRENTE
 import br.com.zup.pix.repository.ChavePixRepository
 import br.com.zup.pix.servicosExternos.BancoCentralDoBrasilClient
 import io.grpc.ManagedChannel
@@ -13,23 +15,37 @@ import io.grpc.StatusRuntimeException
 import io.micronaut.context.annotation.Factory
 import io.micronaut.grpc.annotation.GrpcChannel
 import io.micronaut.grpc.server.GrpcServerChannel
+import io.micronaut.http.HttpResponse
+import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
+import java.time.LocalDateTime
 import java.util.*
+import javax.inject.Inject
 import javax.inject.Singleton
 
 @MicronautTest(transactional = false)
 internal class DeletaChaveEndpointTest(
     private val repository: ChavePixRepository,
-    private val bcbClient: BancoCentralDoBrasilClient,
     private val grpcClient: PixDeletaServiceGrpc.PixDeletaServiceBlockingStub
 ) {
+
+    @Inject
+    lateinit var bcbClient: BancoCentralDoBrasilClient
+
     @BeforeEach
     fun setup() {
+        repository.save(chave(tipo = TipoDeChave.EMAIL, chave = "teste@teste.com.br", clienteId = UUID.randomUUID()))
+        repository.save(chave(tipo = TipoDeChave.CPF, chave = "63657520325", clienteId = UUID.randomUUID()))
+        repository.save(chave(tipo = TipoDeChave.CELULAR, chave = "+551155554321", clienteId = UUID.randomUUID()))
+    }
+
+    fun cleanUp() {
         repository.deleteAll()
     }
 
@@ -38,55 +54,31 @@ internal class DeletaChaveEndpointTest(
         //cenário
 
 
-        //ação
-        val contaAssociada = ContaAssociada(
-            instituicao = "ITAÚ UNIBANCO S.A.",
-            nomeDoTitular = "Rafael M C Ponte",
-            cpfDoTitular = "02467781054",
-            agencia = "0001",
-            numeroDaConta = "123455"
-        )
-
-        val cadastro = ChavePix(
-            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
-            tipo = TipoDeChave.CPF,
-            chave = "02467781054",
-            tipoDeConta = TipoDeConta.CONTA_CORRENTE,
-            conta = contaAssociada
-        )
-        repository.save(cadastro)
-
-        val request = CriaChaveChavePixRequest(
-            keyType = PixKeyType.by(cadastro.tipo),
-            key = cadastro.chave,
-            bankAccount = BankAccount(
-                participant = ContaAssociada.ITAU_UNIBANCO_ISPB,
-                branch = contaAssociada.agencia,
-                accountNumber = contaAssociada.numeroDaConta,
-                accountType = AccountType.by(cadastro.tipoDeConta),
-            ),
-            owner = Owner(
-                type = Owner.OwnerType.NATURAL_PERSON,
-                name = contaAssociada.nomeDoTitular,
-                taxIdNumber = contaAssociada.cpfDoTitular
+        `when`(bcbClient.deleta("teste@teste.com.br", DeletaChavePixRequest("teste@teste.com.br")))
+            .thenReturn(
+                HttpResponse.ok(
+                    DeletaChavePixResponse(
+                        "teste@teste.com.br",
+                        participant = ContaAssociada.ITAU_UNIBANCO_ISPB,
+                        deleteAt = LocalDateTime.now()
+                    )
+                )
             )
-        )
 
-        bcbClient.cadastra(request)
+        val chaveCadastrada = repository.findByChave("teste@teste.com.br").get()
 
         val response = grpcClient.deleta(
             DeletaChaveRequest.newBuilder()
-                .setPixId(cadastro.id.toString())
-                .setClienteId(cadastro.clienteId.toString())
+                .setPixId(chaveCadastrada.id.toString())
+                .setClienteId(chaveCadastrada.clienteId.toString())
                 .build()
         )
 
 
         //validação
         with(response) {
-            assertNotNull(pixId)
-            assertNotNull(clienteId)
-            assertEquals(0, repository.count())
+            assertEquals(chaveCadastrada.id.toString(), pixId)
+            assertEquals(chaveCadastrada.clienteId.toString(), clienteId)
         }
 
     }
@@ -98,22 +90,7 @@ internal class DeletaChaveEndpointTest(
 
         //ação
 
-        val contaAssociada = ContaAssociada(
-            instituicao = "ITAÚ UNIBANCO S.A.",
-            nomeDoTitular = "Rafael M C Ponte",
-            cpfDoTitular = "02467781054",
-            agencia = "0001",
-            numeroDaConta = "123455"
-        )
-
-        val cadastro = ChavePix(
-            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
-            tipo = TipoDeChave.ALEATORIA,
-            chave = UUID.randomUUID().toString(),
-            tipoDeConta = TipoDeConta.CONTA_CORRENTE,
-            conta = contaAssociada
-        )
-        repository.save(cadastro)
+        val cadastro = repository.findByChave("63657520325").get()
 
         val error = assertThrows<StatusRuntimeException> {
 
@@ -127,37 +104,23 @@ internal class DeletaChaveEndpointTest(
 
         //validação
         with(error) {
-            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertEquals(Status.NOT_FOUND.code, status.code)
             assertEquals("Chave pix não encontrada ou não pertence ao cliente", status.description)
         }
     }
 
     @Test
-    fun `deve retornar status invalid_argument quando a chave nao for encontrada`() {
+    fun `deve retornar status not_found quando a chave nao for encontrada`() {
         //cenário
 
         //ação
-        val contaAssociada = ContaAssociada(
-            instituicao = "ITAÚ UNIBANCO S.A.",
-            nomeDoTitular = "Rafael M C Ponte",
-            cpfDoTitular = "02467781054",
-            agencia = "0001",
-            numeroDaConta = "123455"
-        )
 
-        val cadastro = ChavePix(
-            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
-            tipo = TipoDeChave.CPF,
-            chave = "02467781054",
-            tipoDeConta = TipoDeConta.CONTA_CORRENTE,
-            conta = contaAssociada
-        )
-        repository.save(cadastro)
+        val cadastro = repository.findByChave("+551155554321").get()
 
         val error = assertThrows<StatusRuntimeException> {
             grpcClient.deleta(
                 DeletaChaveRequest.newBuilder()
-                    .setPixId("dcb51af9-5677-4a3a-a1aa-f87b48e30582")
+                    .setPixId(UUID.randomUUID().toString())
                     .setClienteId(cadastro.clienteId.toString())
                     .build()
             )
@@ -165,66 +128,39 @@ internal class DeletaChaveEndpointTest(
 
         //validação
         with(error) {
-            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertEquals(Status.NOT_FOUND.code, status.code)
             assertEquals("Chave pix não encontrada ou não pertence ao cliente", status.description)
         }
     }
 
     @Test
-    internal fun `deve retornar status invalid_argument quando usuario tentar excluir chave de terceiro`() {
+    internal fun `deve retornar status not_found quando usuario tentar excluir chave de terceiro`() {
 
         //cenário
 
         //ação
 
-        val contaAssociada1 = ContaAssociada(
-            instituicao = "ITAÚ UNIBANCO S.A.",
-            nomeDoTitular = "Rafael M C Ponte",
-            cpfDoTitular = "02467781054",
-            agencia = "0001",
-            numeroDaConta = "123455"
-        )
-
-        val contaAssociada2 = ContaAssociada(
-            instituicao = "ITAÚ UNIBANCO S.A.",
-            nomeDoTitular = "Yuri Matheus",
-            cpfDoTitular = "86135457004",
-            agencia = "0001",
-            numeroDaConta = "123455"
-        )
-
-        val usuario1 = ChavePix(
-            clienteId = UUID.fromString("c56dfef4-7901-44fb-84e2-a2cefb157890"),
-            tipo = TipoDeChave.CELULAR,
-            chave = "11123456789",
-            tipoDeConta = TipoDeConta.CONTA_CORRENTE,
-            conta = contaAssociada1
-        )
-        repository.save(usuario1)
-
-        val usuario2 = ChavePix(
-            clienteId = UUID.fromString("5260263c-a3c1-4727-ae32-3bdb2538841b"),
-            tipo = TipoDeChave.EMAIL,
-            chave = "email@teste.com.br",
-            tipoDeConta = TipoDeConta.CONTA_CORRENTE,
-            conta = contaAssociada2
-        )
-        repository.save(usuario2)
+        val cadastro = repository.findByChave("teste@teste.com.br").get()
 
         val error = assertThrows<StatusRuntimeException> {
             grpcClient.deleta(
                 DeletaChaveRequest.newBuilder()
-                    .setPixId(usuario1.id.toString())
-                    .setClienteId(usuario2.clienteId.toString())
+                    .setPixId(cadastro.id.toString())
+                    .setClienteId(UUID.randomUUID().toString())
                     .build()
             )
         }
 
         //validação
         with(error) {
-            assertEquals(Status.INVALID_ARGUMENT.code, status.code)
+            assertEquals(Status.NOT_FOUND.code, status.code)
             assertEquals("Chave pix não encontrada ou não pertence ao cliente", status.description)
         }
+    }
+
+    @MockBean(BancoCentralDoBrasilClient::class)
+    fun bcbClient(): BancoCentralDoBrasilClient? {
+        return mock(BancoCentralDoBrasilClient::class.java)
     }
 
     @Factory
@@ -233,6 +169,26 @@ internal class DeletaChaveEndpointTest(
         fun blockingstub(@GrpcChannel(GrpcServerChannel.NAME) channel: ManagedChannel): PixDeletaServiceGrpc.PixDeletaServiceBlockingStub? {
             return PixDeletaServiceGrpc.newBlockingStub(channel)
         }
+    }
+
+    private fun chave(
+        tipo: TipoDeChave,
+        chave: String = UUID.randomUUID().toString(),
+        clienteId: UUID = UUID.randomUUID(),
+    ): ChavePix {
+        return ChavePix(
+            clienteId = clienteId,
+            tipo = tipo,
+            chave = chave,
+            tipoDeConta = CONTA_CORRENTE,
+            conta = ContaAssociada(
+                instituicao = "UNIBANCO ITAU",
+                nomeDoTitular = "Rafael Ponte",
+                cpfDoTitular = "12345678900",
+                agencia = "1218",
+                numeroDaConta = "123456"
+            )
+        )
     }
 
 }

@@ -45,7 +45,7 @@ sealed class Filtro {
                     val response = bcbClient.consultaPorChave(chave)
                     when (response.status) {
                         HttpStatus.OK -> response.body()?.toModel()
-                        else -> throw ChavePixNaoEncontradaException("Chave Pix não encontrada") // 1
+                        else -> throw ChavePixNaoEncontradaException("Chave Pix não encontrada")
                     }
                 }
         }

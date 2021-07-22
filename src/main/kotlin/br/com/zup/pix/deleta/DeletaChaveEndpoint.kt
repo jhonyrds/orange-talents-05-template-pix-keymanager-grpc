@@ -9,8 +9,8 @@ import io.grpc.stub.StreamObserver
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 @ErrorHandler
+@Singleton
 class DeletaChaveEndpoint(@Inject val service: DeletaChaveService) :
     PixDeletaServiceGrpc.PixDeletaServiceImplBase() {
 

@@ -1,10 +1,12 @@
 package br.com.zup.pix.deleta
 
+import br.com.zup.pix.exception.ChavePixNaoEncontradaException
 import br.com.zup.pix.repository.ChavePixRepository
 import br.com.zup.pix.servicosExternos.BancoCentralDoBrasilClient
 import br.com.zup.pix.util.ValidUUID
 import io.micronaut.http.HttpStatus
 import io.micronaut.validation.Validated
+import java.lang.IllegalArgumentException
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,7 +27,7 @@ class DeletaChaveService(
         val uuidClienteId = UUID.fromString(clienteId)
 
         val chave = repository.findByIdAndClienteId(uuidPixId, uuidClienteId)
-            .orElseThrow { IllegalArgumentException("Chave pix não encontrada ou não pertence ao cliente") }
+            .orElseThrow { ChavePixNaoEncontradaException("Chave pix não encontrada ou não pertence ao cliente") }
 
         val request = DeletaChavePixRequest(chave.chave)
         val bcbResponse = bcbClient.deleta(chave.chave, request)
